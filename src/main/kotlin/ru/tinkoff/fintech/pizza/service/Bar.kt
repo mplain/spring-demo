@@ -4,9 +4,7 @@ import ru.tinkoff.fintech.pizza.model.Coffee
 import ru.tinkoff.fintech.pizza.model.Order
 import ru.tinkoff.fintech.pizza.service.client.BarMenu
 
-class Bar {
-
-    private val barMenu = BarMenu()
+class Bar(private val barMenu: BarMenu) {
 
     fun getCoffeeMenu(): Set<Coffee> = barMenu.getCoffeeMenu()
 

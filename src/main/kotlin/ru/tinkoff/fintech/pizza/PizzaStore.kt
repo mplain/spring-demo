@@ -7,11 +7,11 @@ import ru.tinkoff.fintech.pizza.service.Accounting
 import ru.tinkoff.fintech.pizza.service.Bar
 import ru.tinkoff.fintech.pizza.service.Kitchen
 
-class PizzaStore {
-
-    private val bar = Bar()
-    private val kitchen = Kitchen()
-    private val accounting = Accounting()
+class PizzaStore(
+    private val bar: Bar,
+    private val kitchen: Kitchen,
+    private val accounting: Accounting
+) {
 
     fun getCoffeeMenu(): Map<Coffee, Double> =
         bar.getCoffeeMenu().associateWith(accounting::getCoffeePrice)

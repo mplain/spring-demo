@@ -6,9 +6,7 @@ import ru.tinkoff.fintech.pizza.model.Order
 import ru.tinkoff.fintech.pizza.model.Pizza
 import ru.tinkoff.fintech.pizza.service.client.Ledger
 
-class Accounting {
-
-    private val ledger = Ledger()
+class Accounting(private val ledger: Ledger) {
 
     fun getCoffeePrice(coffee: Coffee): Double = ledger.getCoffeePrice(coffee)
 

@@ -8,10 +8,11 @@ import ru.tinkoff.fintech.pizza.service.client.PizzaMenu
 import ru.tinkoff.fintech.pizza.service.client.Storage
 import java.util.concurrent.ForkJoinPool
 
-class Kitchen {
+class Kitchen(
+    private val pizzaMenu: PizzaMenu,
+    private val storage: Storage
+) {
 
-    private val pizzaMenu = PizzaMenu()
-    private val storage = Storage()
     private val workers = ForkJoinPool(2)
     private val orders = mutableMapOf<Int, Order>()
 
@@ -22,7 +23,7 @@ class Kitchen {
     fun order(order: Order) {
         val pizza = order.food
         require(pizza is Pizza) { "Мы готовим только пиццу!" }
-        storage.take(pizza.ingredients)
+        takeIngredients(pizza.ingredients)
         workers.execute {
             orders[order.id] = order
             println("Заказ ${order.id} принят: ${pizza.name}")
@@ -40,4 +41,12 @@ class Kitchen {
     fun isOrderReady(orderId: Int): Boolean = orders[orderId]?.status == Status.READY
 
     fun getOrder(orderId: Int): Food = orders.remove(orderId)?.food ?: error("Нет такого заказа!")
+
+    private fun takeIngredients(ingredients: Map<String, Int>) {
+        check(hasEnough(ingredients)) { "Недостаточно ингредиентов!" }
+        ingredients.forEach { (ingredient, amount) -> storage.take(ingredient, amount) }
+    }
+
+    private fun hasEnough(ingredients: Map<String, Int>): Boolean =
+        ingredients.all { (ingredient, amount) -> storage.getAmount(ingredient) >= amount }
 }
