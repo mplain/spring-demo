@@ -3,19 +3,19 @@ package ru.tinkoff.fintech.pizza.service.client
 class Storage {
 
     private val storage: MutableMap<String, Int> = mutableMapOf(
-        "тесто" to 20,
         "яйца" to 20,
-        "сыр" to 20,
-        "пармезан" to 20,
+        "бекон" to 20,
+        "тесто" to 20,
         "томат" to 20,
         "оливки" to 20,
-        "зелень" to 20,
+        "сыр" to 20,
+        "пармезан" to 20,
         "грибы" to 20,
         "спаржа" to 20,
-        "бекон" to 20,
-        "салями" to 20,
+        "мясное ассорти" to 20,
         "вяленая говядина" to 20,
-        "мясное ассорти" to 20
+        "салями" to 20,
+        "зелень" to 20
     )
 
     fun take(ingredients: Map<String, Int>) {

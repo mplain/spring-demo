@@ -15,7 +15,9 @@ class Ledger {
         "грибы" to 3.34,
         "спаржа" to 3.34,
         "мясное ассорти" to 9.38,
-        "вяленая говядина" to 12.24
+        "вяленая говядина" to 12.24,
+        "салями" to 8.0,
+        "зелень" to 2.0
     )
 
     private val coffeePrices: Map<String, Double> = mapOf(
