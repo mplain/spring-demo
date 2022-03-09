@@ -1,126 +1,184 @@
 package ru.tinkoff.fintech.pizza.cancellation
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.ninjasquad.springmockk.MockkBean
+import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.FeatureSpec
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
-import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.delay
-import ru.tinkoff.fintech.pizza.PizzaStore
-import ru.tinkoff.fintech.pizza.model.Coffee
-import ru.tinkoff.fintech.pizza.model.Pizza
-import ru.tinkoff.fintech.pizza.service.Accounting
-import ru.tinkoff.fintech.pizza.service.Bar
-import ru.tinkoff.fintech.pizza.service.Kitchen
-import ru.tinkoff.fintech.pizza.service.client.BarMenu
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.ResultActionsDsl
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
+import ru.tinkoff.fintech.pizza.model.*
+import ru.tinkoff.fintech.pizza.service.client.BarMenuClient
 import ru.tinkoff.fintech.pizza.service.client.Ledger
-import ru.tinkoff.fintech.pizza.service.client.PizzaMenu
-import ru.tinkoff.fintech.pizza.service.client.Storage
+import ru.tinkoff.fintech.pizza.service.client.PizzaMenuClient
+import ru.tinkoff.fintech.pizza.service.client.StorageClient
+import kotlin.random.Random.Default.nextInt
+import kotlin.text.Charsets.UTF_8
 
-class PizzaStoreTest : FeatureSpec() {
+@SpringBootTest
+@AutoConfigureMockMvc
+class PizzaStoreTest(private val mockMvc: MockMvc) : FeatureSpec() {
 
-    private val barMenu = mockk<BarMenu>()
-    private val pizzaMenu = mockk<PizzaMenu>()
-    private val storage = mockk<Storage>()
-    private val ledger = mockk<Ledger>()
-    private val pizzaStore = PizzaStore(Bar(barMenu), Kitchen(pizzaMenu, storage), Accounting(ledger))
-    private var orderCounter = 0
-    private var cash = 0.0
+    @MockkBean
+    private lateinit var barMenuClient: BarMenuClient
+
+    @MockkBean
+    private lateinit var pizzaMenuClient: PizzaMenuClient
+
+    @MockkBean
+    private lateinit var storageClient: StorageClient
+
+    @MockkBean
+    private lateinit var ledger: Ledger
+
+    override fun extensions(): List<Extension> = listOf(SpringExtension)
 
     override fun beforeEach(testCase: TestCase) {
-        every { barMenu.getCoffeeMenu() } returns coffeeTypes
-        every { barMenu.getCoffee(any()) } answers { coffeeTypes.find { it.name == firstArg() } }
-        every { pizzaMenu.getPizzaMenu() } returns pizzaTypes
-        every { pizzaMenu.getPizza(any()) } answers { pizzaTypes.find { it.name == firstArg() } }
-        every { storage.getAmount(any()) } answers { storageAmounts[firstArg()] ?: 0 }
-        every { storage.take(any(), any()) } answers {
+        every { barMenuClient.getCoffeeMenu() } returns coffeeTypes
+        every { barMenuClient.getCoffee(any()) } answers { coffeeTypes.find { it.name == firstArg() } }
+        every { pizzaMenuClient.getPizzaMenu() } returns pizzaTypes
+        every { pizzaMenuClient.getPizza(any()) } answers { pizzaTypes.find { it.name == firstArg() } }
+        every { storageClient.getAmount(any()) } answers { storageAmounts[firstArg()] ?: 0 }
+        every { storageClient.take(any(), any()) } answers {
             storageAmounts[firstArg()] = storageAmounts.getValue(firstArg()) - arg<Int>(1)
         }
         every { ledger.getIngredientPrice(any()) } answers { ingredientPrices.getValue(firstArg()) }
         every { ledger.getCoffeePrice(any()) } answers { coffeePrices.getValue(firstArg<Coffee>().name) }
-        every { ledger.saveOrder(any()) } answers { cash += firstArg<Double>(); ++orderCounter }
+        every { ledger.saveOrder(any()) } returns nextInt()
     }
 
     override fun afterEach(testCase: TestCase, result: TestResult) {
         clearAllMocks()
-        orderCounter = 0
-        cash = 0.0
     }
 
     init {
         feature("order coffee") {
             scenario("success") {
-                val coffeeMenu = pizzaStore.getCoffeeMenu()
-                val coffee = coffeeMenu.keys.first()
-                val price = coffeeMenu.getValue(coffee)
-                val cash = price + 1
+                val coffeeMenu = getCoffeeMenu()
+                val coffee = coffeeMenu.first()
+                val cash = coffee.price + 1
 
-                val (result, change) = pizzaStore.orderCoffee(coffee.name, cash)
+                val order = orderCoffee(coffee.name, cash)
 
-                result shouldBe coffee
-                change shouldBe (cash - price)
+                order should {
+                    it.item!!.name shouldBe coffee.name
+                    it.status shouldBe Status.READY
+                    it.change shouldBe (cash - coffee.price)
+                    it.comment shouldBe null
+                }
             }
             scenario("failure - unknown coffee") {
                 val coffeeName = "лавандовый раф"
                 val cash = Double.MAX_VALUE
-                val (result, change) = pizzaStore.orderCoffee(coffeeName, cash)
 
-                result shouldBe null
-                change shouldBe cash
+                val order = orderCoffee(coffeeName, cash)
+
+                order should {
+                    it.item shouldBe null
+                    it.status shouldBe Status.DECLINED
+                    it.change shouldBe cash
+                    it.comment shouldBe "Нет такого кофе в меню!"
+                }
             }
             scenario("failure - insufficient cash") {
-                val coffeeMenu = pizzaStore.getCoffeeMenu()
-                val coffee = coffeeMenu.keys.first()
-                val price = coffeeMenu.getValue(coffee)
-                val cash = price - 1
+                val coffeeMenu = getCoffeeMenu()
+                val coffee = coffeeMenu.first()
+                val cash = coffee.price - 1
 
-                val (result, change) = pizzaStore.orderCoffee(coffee.name, cash)
+                val order = orderCoffee(coffee.name, cash)
 
-                result shouldBe null
-                change shouldBe cash
+                order should {
+                    it.item shouldBe null
+                    it.status shouldBe Status.DECLINED
+                    it.change shouldBe cash
+                    it.comment shouldBe "Недостаточно денег!"
+                }
             }
         }
         feature("order pizza") {
             scenario("success") {
-                val pizzaMenu = pizzaStore.getPizzaMenu()
-                val pizza = pizzaMenu.keys.first()
-                val price = pizzaMenu.getValue(pizza)
-                val cash = price + 1
+                val pizzaMenu = getPizzaMenu()
+                val pizza = pizzaMenu.first()
+                val cash = pizza.price + 1
 
-                val (orderId, change) = pizzaStore.orderPizza(pizza.name, cash)
+                val order = orderPizza(pizza.name, cash)
+                val orderId = order.item
 
                 orderId.shouldNotBeNull()
-                change shouldBe (cash - price)
+                order.change shouldBe (cash - pizza.price)
 
-                pizzaStore.getPizzaIfReady(orderId).shouldBeNull()
+                getPizzaIfReady(orderId) shouldBe OrderResponse(status = Status.IN_PROGRESS)
                 delay(1000)
-                pizzaStore.getPizzaIfReady(orderId) shouldBe pizza
+                getPizzaIfReady(orderId) should {
+                    it.item!!.name shouldBe pizza.name
+                    it.status shouldBe Status.READY
+                }
             }
             scenario("failure - unknown pizza") {
                 val pizzaName = "диабло 2"
                 val cash = Double.MAX_VALUE
-                val (result, change) = pizzaStore.orderPizza(pizzaName, cash)
 
-                result shouldBe null
-                change shouldBe cash
+                val order = orderPizza(pizzaName, cash)
+
+                order should {
+                    it.item shouldBe null
+                    it.status shouldBe Status.DECLINED
+                    it.change shouldBe cash
+                    it.comment shouldBe "Нет такой пиццы в меню!"
+                }
             }
             scenario("failure - insufficient cash") {
-                val pizzaMenu = pizzaStore.getPizzaMenu()
-                val pizza = pizzaMenu.keys.first()
-                val price = pizzaMenu.getValue(pizza)
-                val cash = price - 1
+                val pizzaMenu = getPizzaMenu()
+                val pizza = pizzaMenu.first()
+                val cash = pizza.price - 1
 
-                val (result, change) = pizzaStore.orderPizza(pizza.name, cash)
+                val order = orderPizza(pizza.name, cash)
 
-                result shouldBe null
-                change shouldBe cash
+                order should {
+                    it.status shouldBe Status.DECLINED
+                    it.item shouldBe null
+                    it.change shouldBe cash
+                    it.comment shouldBe "Недостаточно денег!"
+                }
             }
         }
     }
+
+    private fun getCoffeeMenu(): Set<CoffeeMenuItem> =
+        mockMvc.get("/coffee/menu").readResponse()
+
+    private fun orderCoffee(name: String, cash: Double, status: HttpStatus = HttpStatus.OK): OrderResponse<Coffee> =
+        mockMvc.post("/coffee/order?name={name}&cash={cash}", name, cash).readResponse(status)
+
+    private fun getPizzaMenu(): Set<PizzaMenuItem> =
+        mockMvc.get("/pizza/menu").readResponse()
+
+    private fun orderPizza(name: String, cash: Double, status: HttpStatus = HttpStatus.OK): OrderResponse<Int> =
+        mockMvc.post("/pizza/order?name={name}&cash={cash}", name, cash).readResponse(status)
+
+    private fun getPizzaIfReady(orderId: Int): OrderResponse<Pizza> =
+        mockMvc.get("/pizza/order/{orderId}", orderId).readResponse()
+
+    private inline fun <reified T> ResultActionsDsl.readResponse(expectedStatus: HttpStatus = HttpStatus.OK): T = this
+        .andExpect { status { isEqualTo(expectedStatus.value()) } }
+        .andReturn().response.getContentAsString(UTF_8)
+        .let { if (T::class == String::class) it as T else objectMapper.readValue(it) }
+
+    private val objectMapper = jacksonObjectMapper()
 
     private val coffeeTypes = setOf(
         Coffee("эспрессо", 5),

@@ -6,4 +6,11 @@ data class Order(
     val status: Status = Status.IN_PROGRESS
 )
 
-enum class Status { IN_PROGRESS, READY }
+data class OrderResponse<T>(
+    val item: T? = null,
+    val status: Status,
+    val change: Double = 0.0,
+    val comment: String? = null
+)
+
+enum class Status { IN_PROGRESS, READY, DECLINED }

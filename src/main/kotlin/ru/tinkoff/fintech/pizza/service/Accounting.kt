@@ -1,11 +1,13 @@
 package ru.tinkoff.fintech.pizza.service
 
+import org.springframework.stereotype.Service
 import ru.tinkoff.fintech.pizza.model.Coffee
 import ru.tinkoff.fintech.pizza.model.Food
 import ru.tinkoff.fintech.pizza.model.Order
 import ru.tinkoff.fintech.pizza.model.Pizza
 import ru.tinkoff.fintech.pizza.service.client.Ledger
 
+@Service
 class Accounting(private val ledger: Ledger) {
 
     fun getCoffeePrice(coffee: Coffee): Double = ledger.getCoffeePrice(coffee)

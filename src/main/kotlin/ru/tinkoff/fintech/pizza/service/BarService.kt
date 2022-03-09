@@ -1,14 +1,19 @@
 package ru.tinkoff.fintech.pizza.service
 
+import org.springframework.stereotype.Service
 import ru.tinkoff.fintech.pizza.model.Coffee
 import ru.tinkoff.fintech.pizza.model.Order
-import ru.tinkoff.fintech.pizza.service.client.BarMenu
+import ru.tinkoff.fintech.pizza.service.client.BarMenuClient
 
-class Bar(private val barMenu: BarMenu) {
+@Service
+class BarService(private val barMenuClient: BarMenuClient) {
 
-    fun getCoffeeMenu(): Set<Coffee> = barMenu.getCoffeeMenu()
+    fun getCoffeeMenu(): Set<Coffee> = barMenuClient.getCoffeeMenu()
 
-    fun getCoffee(name: String): Coffee = barMenu.getCoffee(name) ?: error("Нет такого кофе в меню!")
+    fun getCoffee(name: String): Coffee {
+        val coffee = barMenuClient.getCoffee(name)
+        return requireNotNull(coffee) { "Нет такого кофе в меню!" }
+    }
 
     fun order(order: Order): Coffee {
         val coffee = order.food
