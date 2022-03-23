@@ -1,6 +1,6 @@
 package ru.tinkoff.fintech.pizza.cancellation
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
@@ -31,7 +31,7 @@ import kotlin.text.Charsets.UTF_8
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class PizzaStoreTest(private val mockMvc: MockMvc) : FeatureSpec() {
+class PizzaStoreTest(private val mockMvc: MockMvc, private val objectMapper: ObjectMapper) : FeatureSpec() {
 
     @MockkBean
     private lateinit var barMenuClient: BarMenuClient
@@ -177,8 +177,6 @@ class PizzaStoreTest(private val mockMvc: MockMvc) : FeatureSpec() {
         .andExpect { status { isEqualTo(expectedStatus.value()) } }
         .andReturn().response.getContentAsString(UTF_8)
         .let { if (T::class == String::class) it as T else objectMapper.readValue(it) }
-
-    private val objectMapper = jacksonObjectMapper()
 
     private val coffeeTypes = setOf(
         Coffee("эспрессо", 5),

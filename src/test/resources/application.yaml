@@ -1,0 +1,9 @@
+spring:
+  application.name: spring-demo
+  profiles.active: test
+server.port: 9000
+
+bar.menu.address: http://localhost:9001
+kitchen.menu.address: http://localhost:9002
+storage.address: http://localhost:9003
+ledger.address: http://localhost:9004

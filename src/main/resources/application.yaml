@@ -1,4 +1,6 @@
-spring.application.name: spring-demo
+spring:
+  application.name: spring-demo
+  profiles.active: dev
 server.port: 9000
 
 bar.menu.address: https://bar-menu.tinkoff.ru
