@@ -12,7 +12,7 @@ import ru.tinkoff.fintech.pizza.model.external.SaveOrderResponse
 @Service
 class Ledger(
     private val restTemplate: RestTemplate,
-    @Value("ledger.address") private val ledgerAddress: String
+    @Value("\${ledger.address}") private val ledgerAddress: String
 ) {
 
     fun getIngredientPrice(item: String): Double = getPrice(TYPE_INGREDIENT, item)

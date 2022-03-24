@@ -12,7 +12,7 @@ import ru.tinkoff.fintech.pizza.model.Coffee
 @Service
 class BarMenuClient(
     private val restTemplate: RestTemplate,
-    @Value("bar.menu.address") private val barMenuAddress: String
+    @Value("\${bar.menu.address}") private val barMenuAddress: String
 ) {
 
     fun getCoffeeMenu(): Set<Coffee> =

@@ -11,7 +11,7 @@ import ru.tinkoff.fintech.pizza.model.external.TakeIngredientRequest
 @Service
 class StorageClient(
     private val restTemplate: RestTemplate,
-    @Value("storage.address") private val storageAddress: String
+    @Value("\${storage.address}") private val storageAddress: String
 ) {
 
     fun getAmount(ingredient: String): Int =

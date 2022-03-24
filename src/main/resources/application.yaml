@@ -4,6 +4,6 @@ spring:
 server.port: 9000
 
 bar.menu.address: https://bar-menu.tinkoff.ru
-kitchen.menu.address: https://kitchen-menu.tinkoff.ru
+pizza.menu.address: https://kitchen-menu.tinkoff.ru
 storage.address: https://storage.tinkoff.ru
 ledger.address: https://ledger.tinkoff.ru
