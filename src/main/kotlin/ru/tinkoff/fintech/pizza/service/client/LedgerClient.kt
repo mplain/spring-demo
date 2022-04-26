@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
 import org.springframework.web.client.postForObject
+import ru.tinkoff.fintech.external.model.SaveOrderRequest
+import ru.tinkoff.fintech.external.model.SaveOrderResponse
 import ru.tinkoff.fintech.pizza.model.Coffee
-import ru.tinkoff.fintech.pizza.model.external.SaveOrderRequest
-import ru.tinkoff.fintech.pizza.model.external.SaveOrderResponse
 
 @Service
-class Ledger(
+class LedgerClient(
     private val restTemplate: RestTemplate,
     @Value("\${ledger.address}") private val ledgerAddress: String
 ) {

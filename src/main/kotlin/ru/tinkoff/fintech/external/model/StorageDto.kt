@@ -1,4 +1,4 @@
-package ru.tinkoff.fintech.pizza.model.external
+package ru.tinkoff.fintech.external.model
 
 data class GetAmountResponse(val ingredient: String, val amount: Int)
 

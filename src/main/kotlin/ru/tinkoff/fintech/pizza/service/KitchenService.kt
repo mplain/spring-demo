@@ -8,23 +8,23 @@ import org.springframework.stereotype.Service
 import ru.tinkoff.fintech.pizza.model.Order
 import ru.tinkoff.fintech.pizza.model.Pizza
 import ru.tinkoff.fintech.pizza.model.Status
-import ru.tinkoff.fintech.pizza.service.client.PizzaMenuClient
+import ru.tinkoff.fintech.pizza.service.client.MenuDao
 import ru.tinkoff.fintech.pizza.service.client.StorageClient
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class KitchenService(
-    private val pizzaMenuClient: PizzaMenuClient,
+    private val pizzaMenuDao: MenuDao,
     private val storageClient: StorageClient
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
     private val orders = ConcurrentHashMap<Int, Order>()
 
-    fun getPizzaMenu(): Set<Pizza> = pizzaMenuClient.getPizzaMenu()
+    fun getPizzaMenu(): Set<Pizza> = pizzaMenuDao.getPizzaMenu()
 
     fun getPizza(name: String): Pizza {
-        val pizza = pizzaMenuClient.getPizza(name)
+        val pizza = pizzaMenuDao.getPizza(name)
         return requireNotNull(pizza) { "Нет такой пиццы в меню!" }
     }
 

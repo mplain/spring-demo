@@ -5,15 +5,15 @@ import ru.tinkoff.fintech.pizza.model.Coffee
 import ru.tinkoff.fintech.pizza.model.Food
 import ru.tinkoff.fintech.pizza.model.Order
 import ru.tinkoff.fintech.pizza.model.Pizza
-import ru.tinkoff.fintech.pizza.service.client.Ledger
+import ru.tinkoff.fintech.pizza.service.client.LedgerClient
 
 @Service
-class Accounting(private val ledger: Ledger) {
+class Accounting(private val ledgerClient: LedgerClient) {
 
-    fun getCoffeePrice(coffee: Coffee): Double = ledger.getCoffeePrice(coffee)
+    fun getCoffeePrice(coffee: Coffee): Double = ledgerClient.getCoffeePrice(coffee)
 
     fun getPizzaPrice(pizza: Pizza): Double =
-        pizza.ingredients.map { (ingredient, amount) -> ledger.getIngredientPrice(ingredient) * amount }.sum()
+        pizza.ingredients.map { (ingredient, amount) -> ledgerClient.getIngredientPrice(ingredient) * amount }.sum()
 
     fun orderCoffee(coffee: Coffee, cash: Double): Pair<Order, Double> {
         val price = getCoffeePrice(coffee)
@@ -27,7 +27,7 @@ class Accounting(private val ledger: Ledger) {
 
     private fun order(food: Food, price: Double, money: Double): Pair<Order, Double> {
         require(money >= price) { "Недостаточно денег!" }
-        val orderId = ledger.saveOrder(price)
+        val orderId = ledgerClient.saveOrder(price)
         val order = Order(orderId, food)
         val change = money - price
         return order to change

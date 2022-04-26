@@ -22,9 +22,9 @@ import org.springframework.test.web.servlet.ResultActionsDsl
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import ru.tinkoff.fintech.pizza.model.*
-import ru.tinkoff.fintech.pizza.service.client.BarMenuClient
-import ru.tinkoff.fintech.pizza.service.client.Ledger
-import ru.tinkoff.fintech.pizza.service.client.PizzaMenuClient
+import ru.tinkoff.fintech.pizza.service.client.MenuDao
+import ru.tinkoff.fintech.pizza.service.client.LedgerClient
+import ru.tinkoff.fintech.pizza.service.client.PizzaMenuDao
 import ru.tinkoff.fintech.pizza.service.client.StorageClient
 import kotlin.random.Random.Default.nextInt
 import kotlin.text.Charsets.UTF_8
@@ -34,31 +34,31 @@ import kotlin.text.Charsets.UTF_8
 class PizzaStoreTest(private val mockMvc: MockMvc, private val objectMapper: ObjectMapper) : FeatureSpec() {
 
     @MockkBean
-    private lateinit var barMenuClient: BarMenuClient
+    private lateinit var menuDao: MenuDao
 
     @MockkBean
-    private lateinit var pizzaMenuClient: PizzaMenuClient
+    private lateinit var pizzaMenuDao: PizzaMenuDao
 
     @MockkBean
     private lateinit var storageClient: StorageClient
 
     @MockkBean
-    private lateinit var ledger: Ledger
+    private lateinit var ledgerClient: LedgerClient
 
     override fun extensions(): List<Extension> = listOf(SpringExtension)
 
     override fun beforeEach(testCase: TestCase) {
-        every { barMenuClient.getCoffeeMenu() } returns coffeeTypes
-        every { barMenuClient.getCoffee(any()) } answers { coffeeTypes.find { it.name == firstArg() } }
-        every { pizzaMenuClient.getPizzaMenu() } returns pizzaTypes
-        every { pizzaMenuClient.getPizza(any()) } answers { pizzaTypes.find { it.name == firstArg() } }
+        every { menuDao.getCoffeeMenu() } returns coffeeTypes
+        every { menuDao.getCoffee(any()) } answers { coffeeTypes.find { it.name == firstArg() } }
+        every { pizzaMenuDao.getPizzaMenu() } returns pizzaTypes
+        every { pizzaMenuDao.getPizza(any()) } answers { pizzaTypes.find { it.name == firstArg() } }
         every { storageClient.getAmount(any()) } answers { storageAmounts[firstArg()] ?: 0 }
         every { storageClient.take(any(), any()) } answers {
             storageAmounts[firstArg()] = storageAmounts.getValue(firstArg()) - arg<Int>(1)
         }
-        every { ledger.getIngredientPrice(any()) } answers { ingredientPrices.getValue(firstArg()) }
-        every { ledger.getCoffeePrice(any()) } answers { coffeePrices.getValue(firstArg<Coffee>().name) }
-        every { ledger.saveOrder(any()) } returns nextInt()
+        every { ledgerClient.getIngredientPrice(any()) } answers { ingredientPrices.getValue(firstArg()) }
+        every { ledgerClient.getCoffeePrice(any()) } answers { coffeePrices.getValue(firstArg<Coffee>().name) }
+        every { ledgerClient.saveOrder(any()) } returns nextInt()
     }
 
     override fun afterEach(testCase: TestCase, result: TestResult) {

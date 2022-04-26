@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
 import org.springframework.web.client.postForEntity
-import ru.tinkoff.fintech.pizza.model.external.GetAmountResponse
-import ru.tinkoff.fintech.pizza.model.external.TakeIngredientRequest
+import ru.tinkoff.fintech.external.model.GetAmountResponse
+import ru.tinkoff.fintech.external.model.TakeIngredientRequest
 
 @Service
 class StorageClient(
