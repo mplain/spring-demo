@@ -5,7 +5,7 @@ Originally I used this project to teach Spring Boot to students of Kotlin Backen
 It's a pizza store in a park, with two windows: one sells coffee, the other sells pizza.
 When you buy a coffee, you have to wait a bit, then you get your coffee and a receipt (synchronous endpoint).
 When you buy a pizza, you get a receipt right away, with an order number.
-You then need to wait for a while before your order is read (asynchronous endpoint).
+You then need to wait for a while before your order is ready (asynchronous endpoint).
 
 The application is separated into three layers: Controller, Service, Client / Dao.
 Business logic is encapsulated in the Service layer, while the Controller layer is only a technical entrypoint
