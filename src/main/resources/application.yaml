@@ -9,7 +9,4 @@ spring:
   liquibase.change-log: /db/changelog/changelog.xml
 server.port: 9000
 
-bar.menu.address: http://localhost:9001
-pizza.menu.address: http://localhost:9001
-storage.address: http://localhost:9001
-ledger.address: http://localhost:9001
+prices.address: http://localhost:9001
