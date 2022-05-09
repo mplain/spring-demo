@@ -1,11 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
+    kotlin("plugin.spring") version "1.6.20"
+    kotlin("plugin.jpa") version "1.6.20"
+    id("org.springframework.boot") version "2.6.7"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
 }
 
-group = "ru.tinkoff.fintech"
-version = "0.0.1-SNAPSHOT"
+group = "ru.mplain"
+version = "1.0.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -13,10 +17,21 @@ repositories {
 }
 
 dependencies {
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.h2database:h2")
+    implementation("org.flywaydb:flyway-core")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:5.1.0")
-    testImplementation("io.mockk:mockk:1.12.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.8")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+
+    testImplementation("com.ninja-squad:springmockk:3.1.1")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.1")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:5.3.0")
+    testImplementation("io.mockk:mockk:1.12.3")
 }
 
 tasks.withType<KotlinCompile> {
