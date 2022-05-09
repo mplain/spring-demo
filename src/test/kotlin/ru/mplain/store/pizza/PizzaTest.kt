@@ -1,4 +1,4 @@
-package ru.mplain.pizza.store.pizza
+package ru.mplain.store.pizza
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -8,7 +8,6 @@ import io.kotest.core.spec.style.FeatureSpec
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.extensions.spring.SpringExtension
-import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.longs.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.should
